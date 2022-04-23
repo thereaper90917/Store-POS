@@ -27,7 +27,8 @@
             "repository": {
               "owner": "thereaper90917",
               "name": "Store-POS"
-            }
+            },
+            "draft": true
           }
         }
       ],
@@ -36,18 +37,7 @@
           "name": "@electron-forge/maker-squirrel",
           "config": {
             "name": "store_pos"
-          },
-          "publishers": [
-            {
-              "name": "@electron-forge/publisher-github",
-              "config": {
-                "repository": {
-                  "owner": "thereaper90917",
-                  "name": "Store-POS"
-                }
-              }
-            }
-          ]
+          }
         },
         {
           "name": "@electron-forge/maker-zip",

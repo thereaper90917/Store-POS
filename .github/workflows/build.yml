@@ -1,9 +1,5 @@
 name: Build
-on:
-  push:
-    branches:
-      - main
-      - rewrite
+on: [push]
 
 jobs:
   build_on_win:

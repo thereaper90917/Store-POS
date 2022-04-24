@@ -11,8 +11,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.all("/*", function(req, res, next) {
- 
-  res.header("Access-Control-Allow-Origin", "*");  
+
+  res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
   res.header(
     "Access-Control-Allow-Headers",
@@ -25,7 +25,7 @@ app.all("/*", function(req, res, next) {
   }
 });
 
-app.get("/", function(req, res) {
+app.get("/ping", function(req, res) {
   res.send("POS Server Online.");
 });
 
@@ -35,5 +35,7 @@ app.use("/api/categories", require("./api/categories"));
 app.use("/api/settings", require("./api/settings"));
 app.use("/api/users", require("./api/users"));
 app.use("/api", require("./api/transactions"));
+
+// app.use(express.static('public'));
 
 server.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));

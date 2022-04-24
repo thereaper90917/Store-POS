@@ -9,6 +9,12 @@ const path = require("path");
 
 const contextMenu = require("electron-context-menu");
 
+// Live Reload
+require('electron-reload')(__dirname, {
+  electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
+  awaitWriteFinish: true
+});
+
 let mainWindow;
 
 function createWindow() {
@@ -28,7 +34,9 @@ function createWindow() {
   mainWindow.maximize();
   mainWindow.show();
 
-  mainWindow.loadURL(`file://${path.join(__dirname, "index.html")}`);
+  // mainWindow.loadURL(`file://${path.join(__dirname, "index.html")}`);
+  mainWindow.loadURL(`file://${path.join(__dirname, "public/index.html")}`);
+  // mainWindow.loadURL('http://localhost:8001/index.html');
 
   mainWindow.on("closed", () => {
     mainWindow = null;

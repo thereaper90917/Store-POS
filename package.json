@@ -5,11 +5,14 @@
   "description": "My Electron application description",
   "main": "start.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "concurrently \"npm:svelte-dev\" \"electron-forge start\"",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\""
+    "lint": "echo \"No linting configured\"",
+    "svelte-build": "rollup -c",
+    "svelte-dev": "rollup -c -w",
+    "svelte-start": "sirv public"
   },
   "keywords": [],
   "author": {
@@ -64,6 +67,7 @@
     "electron": ">=13.6.6",
     "electron-context-menu": "^0.15.1",
     "electron-packager": "^15.5.1",
+    "electron-reload": "^2.0.0-alpha.1",
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^5.1.0",
     "electron-winstaller": "^4.0.0",
@@ -84,6 +88,7 @@
     "npm": "^8.7.0",
     "path": "^0.12.7",
     "print-js": "^1.0.63",
+    "sirv-cli": "^2.0.2",
     "socket.io": "^4.4.1",
     "sweetalert2": "^9.5.4",
     "xmlhttprequest": "^1.8.0"
@@ -95,6 +100,18 @@
     "@electron-forge/maker-squirrel": "^6.0.0-beta.53",
     "@electron-forge/maker-zip": "^6.0.0-beta.53",
     "@electron-forge/publisher-github": "*",
-    "electron": "13.6.6"
+    "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.2.1",
+    "concurrently": "^7.1.0",
+    "electron": "13.6.6",
+    "rollup": "^2.70.2",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-polyfill-node": "^0.9.0",
+    "rollup-plugin-svelte": "^7.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "svelte": "^3.47.0"
   }
 }

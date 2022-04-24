@@ -1,3 +1,17 @@
+let moment = require('moment');
+let Swal = require('sweetalert2');
+let Store = require('electron-store');
+let jsPDF = require('jspdf');
+let btoa = require('btoa');
+let JsBarcode = require('jsbarcode');
+let html2canvas = require('html2canvas');
+
+let macaddress = require('macaddress');
+let { ipcRenderer } = require('electron');
+
+const remote = require('electron').remote;
+const app = remote.app;
+
 let cart = [];
 let index = 0;
 let allUsers = [];
@@ -11,35 +25,17 @@ let item;
 let auth;
 let holdOrder = 0;
 let vat = 0;
-let perms = null;
 let deleteId = 0;
 let receipt = '';
 let totalVat = 0;
 let subTotal = 0;
 let method = '';
-let order_index = 0;
 let user_index = 0;
-let product_index = 0;
-let transaction_index;
-let host = 'localhost';
-let path = require('path');
-let port = '8001';
-let moment = require('moment');
-let Swal = require('sweetalert2');
-let { ipcRenderer } = require('electron');
 let dotInterval = setInterval(function () {
   $('.dot').text('.');
 }, 3000);
-let Store = require('electron-store');
-const remote = require('electron').remote;
-const app = remote.app;
 let img_path = app.getPath('appData') + '/POS/uploads/';
-let api = 'http://' + host + ':' + port + '/api/';
-let btoa = require('btoa');
-let jsPDF = require('jspdf');
-let html2canvas = require('html2canvas');
-let JsBarcode = require('jsbarcode');
-let macaddress = require('macaddress');
+let api = 'http://localhost:8001/api/';
 let categories = [];
 let holdOrderList = [];
 let customerOrderList = [];
@@ -127,7 +123,7 @@ auth = storage.get('auth');
 user = storage.get('user');
 
 if (auth == undefined) {
-  $.get(api + 'users/check/', function (data) { });
+  $.get(api + 'users/check/', function (data) {});
   $('#loading').show();
   authenticate();
 } else {
@@ -141,7 +137,6 @@ if (auth == undefined) {
 
   if (platform != undefined) {
     if (platform.app == 'Network Point of Sale Terminal') {
-      api = 'http://' + platform.ip + ':' + port + '/api/';
       perms = true;
     }
   }
@@ -224,23 +219,28 @@ if (auth == undefined) {
           }
 
           let item_info = `<div class="col-lg-2 box ${item.category}"
-                                onclick="$(this).addToCart(${item._id}, ${item.quantity
-            }, ${item.stock})">
+                                onclick="$(this).addToCart(${item._id}, ${
+            item.quantity
+          }, ${item.stock})">
                             <div class="widget-panel widget-style-2 ">
-                            <div id="image"><img src="${item.img == ''
-              ? './assets/images/default.jpg'
-              : img_path + item.img
-            }" id="product_img" alt=""></div>
+                            <div id="image"><img src="${
+                              item.img == ''
+                                ? './assets/images/default.jpg'
+                                : img_path + item.img
+                            }" id="product_img" alt=""></div>
                                         <div class="text-muted m-t-5 text-center">
-                                        <div class="name" id="product_name">${item.name
-            }</div>
+                                        <div class="name" id="product_name">${
+                                          item.name
+                                        }</div>
                                         <span class="sku">${item.sku}</span>
-                                        <span class="stock">STOCK </span><span class="count">${item.stock == 1
-              ? item.quantity
-              : 'N/A'
-            }</span></div>
-                                        <sp class="text-success text-center"><b data-plugin="counterup">${settings.symbol + item.price
-            }</b> </sp>
+                                        <span class="stock">STOCK </span><span class="count">${
+                                          item.stock == 1
+                                            ? item.quantity
+                                            : 'N/A'
+                                        }</span></div>
+                                        <sp class="text-success text-center"><b data-plugin="counterup">${
+                                          settings.symbol + item.price
+                                        }</b> </sp>
                             </div>
                         </div>`;
           $('#parent').append(item_info);
@@ -252,7 +252,8 @@ if (auth == undefined) {
           });
 
           $('#categories').append(
-            `<button type="button" id="${category}" class="btn btn-categories btn-white waves-effect waves-light">${c.length > 0 ? c[0].name : ''
+            `<button type="button" id="${category}" class="btn btn-categories btn-white waves-effect waves-light">${
+              c.length > 0 ? c[0].name : ''
             }</button> `
           );
         });
@@ -616,8 +617,9 @@ if (auth == undefined) {
                     <tr>
                         <td>Change</td>
                         <td>:</td>
-                        <td>${settings.symbol + Math.abs(change).toFixed(2)
-          }</td>
+                        <td>${
+                          settings.symbol + Math.abs(change).toFixed(2)
+                        }</td>
                     </tr>
                     <tr>
                         <td>Method</td>
@@ -660,18 +662,18 @@ if (auth == undefined) {
 
       receipt = `<div style="font-size: 10px;">
         <p style="text-align: center;">
-        ${settings.img == ''
-          ? settings.img
-          : '<img style="max-width: 50px;max-width: 100px;" src ="' +
-          img_path +
-          settings.img +
-          '" /><br>'
+        ${
+          settings.img == ''
+            ? settings.img
+            : '<img style="max-width: 50px;max-width: 100px;" src ="' +
+              img_path +
+              settings.img +
+              '" /><br>'
         }
             <span style="font-size: 22px;">${settings.store}</span> <br>
             ${settings.address_one} <br>
             ${settings.address_two} <br>
-            ${settings.contact != '' ? 'Tel: ' + settings.contact + '<br>' : ''
-        }
+            ${settings.contact != '' ? 'Tel: ' + settings.contact + '<br>' : ''}
             ${settings.tax != '' ? 'Vat No: ' + settings.tax + '<br>' : ''}
         </p>
         <hr>
@@ -679,8 +681,9 @@ if (auth == undefined) {
             <p>
             Order No : ${orderNumber} <br>
             Ref No : ${refNumber == '' ? orderNumber : refNumber} <br>
-            Customer : ${customer == 0 ? 'Walk in customer' : customer.name
-        } <br>
+            Customer : ${
+              customer == 0 ? 'Walk in customer' : customer.name
+            } <br>
             Cashier : ${user.fullname} <br>
             Date : ${date}<br>
             </p>
@@ -706,10 +709,11 @@ if (auth == undefined) {
             <tr>
                 <td>Discount</td>
                 <td>:</td>
-                <td>${discount > 0
-          ? settings.symbol + parseFloat(discount).toFixed(2)
-          : ''
-        }</td>
+                <td>${
+                  discount > 0
+                    ? settings.symbol + parseFloat(discount).toFixed(2)
+                    : ''
+                }</td>
             </tr>
 
             ${tax_row}
@@ -719,8 +723,8 @@ if (auth == undefined) {
                 <td><h3>:</h3></td>
                 <td>
                     <h3>${settings.symbol}${parseFloat(orderTotal).toFixed(
-          2
-        )}</h3>
+        2
+      )}</h3>
                 </td>
             </tr>
             ${payment == 0 ? '' : payment}
@@ -1356,18 +1360,21 @@ if (auth == undefined) {
           user_list += `<tr>
             <td>${user.fullname}</td>
             <td>${user.username}</td>
-            <td class="${class_name}">${state.length > 0 ? state[0] : ''
-            } <br><span style="font-size: 11px;"> ${state.length > 0
+            <td class="${class_name}">${
+            state.length > 0 ? state[0] : ''
+          } <br><span style="font-size: 11px;"> ${
+            state.length > 0
               ? moment(state[1]).format('hh:mm A DD MMM YYYY')
               : ''
-            }</span></td>
-            <td>${user._id == 1
-              ? '<span class="btn-group"><button class="btn btn-dark"><i class="fa fa-edit"></i></button><button class="btn btn-dark"><i class="fa fa-trash"></i></button></span>'
-              : '<span class="btn-group"><button onClick="$(this).editUser(' +
-              index +
-              ')" class="btn btn-warning"><i class="fa fa-edit"></i></button><button onClick="$(this).deleteUser(' +
-              user._id +
-              ')" class="btn btn-danger"><i class="fa fa-trash"></i></button></span>'
+          }</span></td>
+            <td>${
+              user._id == 1
+                ? '<span class="btn-group"><button class="btn btn-dark"><i class="fa fa-edit"></i></button><button class="btn btn-dark"><i class="fa fa-trash"></i></button></span>'
+                : '<span class="btn-group"><button onClick="$(this).editUser(' +
+                  index +
+                  ')" class="btn btn-warning"><i class="fa fa-edit"></i></button><button onClick="$(this).deleteUser(' +
+                  user._id +
+                  ')" class="btn btn-danger"><i class="fa fa-trash"></i></button></span>'
             }</td></tr>`;
 
           if (counter == users.length) {
@@ -1405,15 +1412,17 @@ if (auth == undefined) {
             <td><img id="` +
           product._id +
           `"></td>
-            <td><img style="max-height: 50px; max-width: 50px; border: 1px solid #ddd;" src="${product.img == ''
-            ? './assets/images/default.jpg'
-            : img_path + product.img
-          }" id="product_img"></td>
+            <td><img style="max-height: 50px; max-width: 50px; border: 1px solid #ddd;" src="${
+              product.img == ''
+                ? './assets/images/default.jpg'
+                : img_path + product.img
+            }" id="product_img"></td>
             <td>${product.name}</td>
             <td>${settings.symbol}${product.price}</td>
             <td>${product.stock == 1 ? product.quantity : 'N/A'}</td>
             <td>${category.length > 0 ? category[0].name : ''}</td>
-            <td class="nobr"><span class="btn-group"><button onClick="$(this).editProduct(${index})" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button><button onClick="$(this).deleteProduct(${product._id
+            <td class="nobr"><span class="btn-group"><button onClick="$(this).editProduct(${index})" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button><button onClick="$(this).deleteProduct(${
+            product._id
           })" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button></span></td></tr>`;
 
         if (counter == allProducts.length) {
@@ -1506,8 +1515,6 @@ if (auth == undefined) {
       e.preventDefault();
       let formData = $(this).serializeObject();
       let mac_address;
-
-      api = 'http://' + host + ':' + port + '/api/';
 
       macaddress.one(function (err, mac) {
         mac_address = mac;
@@ -1789,30 +1796,32 @@ function loadTransactions() {
         transaction_list += `<tr>
                                 <td>${trans.order}</td>
                                 <td class="nobr">${moment(trans.date).format(
-          'YYYY MMM DD hh:mm:ss'
-        )}</td>
+                                  'YYYY MMM DD hh:mm:ss'
+                                )}</td>
                                 <td>${settings.symbol + trans.total}</td>
-                                <td>${trans.paid == ''
-            ? ''
-            : settings.symbol + trans.paid
-          }</td>
-                                <td>${trans.change
-            ? settings.symbol +
-            Math.abs(trans.change).toFixed(2)
-            : ''
-          }</td>
-                                <td>${trans.paid == ''
-            ? ''
-            : trans.payment_type
-          }</td>
+                                <td>${
+                                  trans.paid == ''
+                                    ? ''
+                                    : settings.symbol + trans.paid
+                                }</td>
+                                <td>${
+                                  trans.change
+                                    ? settings.symbol +
+                                      Math.abs(trans.change).toFixed(2)
+                                    : ''
+                                }</td>
+                                <td>${
+                                  trans.paid == '' ? '' : trans.payment_type
+                                }</td>
                                 <td>${trans.till}</td>
                                 <td>${trans.user}</td>
-                                <td>${trans.paid == ''
-            ? '<button class="btn btn-dark"><i class="fa fa-search-plus"></i></button>'
-            : '<button onClick="$(this).viewTransaction(' +
-            index +
-            ')" class="btn btn-info"><i class="fa fa-search-plus"></i></button></td>'
-          }</tr>
+                                <td>${
+                                  trans.paid == ''
+                                    ? '<button class="btn btn-dark"><i class="fa fa-search-plus"></i></button>'
+                                    : '<button onClick="$(this).viewTransaction(' +
+                                      index +
+                                      ')" class="btn btn-info"><i class="fa fa-search-plus"></i></button></td>'
+                                }</tr>
                     `;
 
         if (counter == transactions.length) {
@@ -1909,14 +1918,16 @@ function loadSoldProducts() {
     sold_list += `<tr>
             <td>${item.product}</td>
             <td>${item.qty}</td>
-            <td>${product[0].stock == 1
-        ? product.length > 0
-          ? product[0].quantity
-          : ''
-        : 'N/A'
-      }</td>
-            <td>${settings.symbol + (item.qty * parseFloat(item.price)).toFixed(2)
-      }</td>
+            <td>${
+              product[0].stock == 1
+                ? product.length > 0
+                  ? product[0].quantity
+                  : ''
+                : 'N/A'
+            }</td>
+            <td>${
+              settings.symbol + (item.qty * parseFloat(item.price)).toFixed(2)
+            }</td>
             </tr>`;
 
     if (counter == sold.length) {
@@ -1978,7 +1989,7 @@ $.fn.viewTransaction = function (index) {
       '</td></tr>';
   });
 
-  type = allTransactions[index].payment_type
+  type = allTransactions[index].payment_type;
 
   if (allTransactions[index].paid != '') {
     payment = `<tr>
@@ -1989,9 +2000,10 @@ $.fn.viewTransaction = function (index) {
                 <tr>
                     <td>Change</td>
                     <td>:</td>
-                    <td>${settings.symbol +
-      Math.abs(allTransactions[index].change).toFixed(2)
-      }</td>
+                    <td>${
+                      settings.symbol +
+                      Math.abs(allTransactions[index].change).toFixed(2)
+                    }</td>
                 </tr>
                 <tr>
                     <td>Method</td>
@@ -2012,18 +2024,18 @@ $.fn.viewTransaction = function (index) {
 
   receipt = `<div style="font-size: 10px;">
         <p style="text-align: center;">
-        ${settings.img == ''
-      ? settings.img
-      : '<img style="max-width: 50px;max-width: 100px;" src ="' +
-      img_path +
-      settings.img +
-      '" /><br>'
-    }
+        ${
+          settings.img == ''
+            ? settings.img
+            : '<img style="max-width: 50px;max-width: 100px;" src ="' +
+              img_path +
+              settings.img +
+              '" /><br>'
+        }
             <span style="font-size: 22px;">${settings.store}</span> <br>
             ${settings.address_one} <br>
             ${settings.address_two} <br>
-            ${settings.contact != '' ? 'Tel: ' + settings.contact + '<br>' : ''
-    }
+            ${settings.contact != '' ? 'Tel: ' + settings.contact + '<br>' : ''}
             ${settings.tax != '' ? 'Vat No: ' + settings.tax + '<br>' : ''}
     </p>
     <hr>
@@ -2031,14 +2043,15 @@ $.fn.viewTransaction = function (index) {
         <p>
         Invoice : ${orderNumber} <br>
         Ref No : ${refNumber} <br>
-        Customer : ${allTransactions[index].customer == 0
-      ? 'Walk in Customer'
-      : allTransactions[index].customer.name
-    } <br>
+        Customer : ${
+          allTransactions[index].customer == 0
+            ? 'Walk in Customer'
+            : allTransactions[index].customer.name
+        } <br>
         Cashier : ${allTransactions[index].user} <br>
         Date : ${moment(allTransactions[index].date).format(
-      'DD MMM YYYY HH:mm:ss'
-    )}<br>
+          'DD MMM YYYY HH:mm:ss'
+        )}<br>
         </p>
 
     </left>
@@ -2062,11 +2075,12 @@ $.fn.viewTransaction = function (index) {
         <tr>
             <td>Discount</td>
             <td>:</td>
-            <td>${discount > 0
-      ? settings.symbol +
-      parseFloat(allTransactions[index].discount).toFixed(2)
-      : ''
-    }</td>
+            <td>${
+              discount > 0
+                ? settings.symbol +
+                  parseFloat(allTransactions[index].discount).toFixed(2)
+                : ''
+            }</td>
         </tr>
 
         ${tax_row}

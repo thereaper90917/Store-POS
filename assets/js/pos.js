@@ -13,7 +13,6 @@ let holdOrder = 0;
 let vat = 0;
 let perms = null;
 let deleteId = 0;
-let paymentType = 0;
 let receipt = '';
 let totalVat = 0;
 let subTotal = 0;
@@ -1818,9 +1817,7 @@ function loadTransactions() {
                     }</td>
                                 <td>${trans.paid == ''
                         ? ''
-                        : trans.payment_type == 0
-                            ? 'Cash'
-                            : 'Card'
+                        : trans.payment_type
                     }</td>
                                 <td>${trans.till}</td>
                                 <td>${trans.user}</td>
@@ -1995,14 +1992,7 @@ $.fn.viewTransaction = function (index) {
             '</td></tr>';
     });
 
-    switch (allTransactions[index].payment_type) {
-        case 2:
-            type = 'Card';
-            break;
-
-        default:
-            type = 'Cash';
-    }
+    type = allTransactions[index].payment_type
 
     if (allTransactions[index].paid != '') {
         payment = `<tr>

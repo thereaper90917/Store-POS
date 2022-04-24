@@ -160,7 +160,7 @@ app.get("/check", function (req, res) {
           perm_settings: 1,
           status: "",
         };
-        usersDB.insert(User, function (err, user) {});
+        usersDB.insert(User, function (err, user) { });
       }
     }
   );

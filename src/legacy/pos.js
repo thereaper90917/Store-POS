@@ -309,7 +309,7 @@ if (auth == undefined) {
       }
     };
 
-    function barcodeSearch(e) {
+    async function barcodeSearch(e) {
       e.preventDefault();
       $('#basic-addon2').empty();
       $('#basic-addon2').append($('<i>', { class: 'fa fa-spinner fa-spin' }));
@@ -318,15 +318,12 @@ if (auth == undefined) {
         skuCode: $('#skuCode').val(),
       };
 
-      $.ajax({
-        url: api + 'inventory/product/sku',
-        type: 'POST',
-        data: JSON.stringify(req),
-        contentType: 'application/json; charset=utf-8',
-        cache: false,
-        processData: false,
-        success: function (data) {
-          if (data._id != undefined && data.quantity >= 1) {
+      if (result.value) {
+        try {
+          const response = await axios.post('/inventory/product/sku', req);
+          const data = response.data;
+
+         if (data._id != undefined && data.quantity >= 1) {
             $(this).addProductToCart(data);
             $('#searchBarCode').get(0).reset();
             $('#basic-addon2').empty();
@@ -352,8 +349,7 @@ if (auth == undefined) {
               $('<i>', { class: 'glyphicon glyphicon-ok' })
             );
           }
-        },
-        error: function (data) {
+        } catch (error) {
           if (data.status === 422) {
             $(this).showValidationError(data);
             $('#basic-addon2').append(
@@ -371,8 +367,8 @@ if (auth == undefined) {
               $('<i>', { class: 'glyphicon glyphicon-warning-sign' })
             );
           }
-        },
-      });
+        }
+      }
     }
 
     $('#searchBarCode').on('submit', function (e) {
@@ -576,7 +572,7 @@ if (auth == undefined) {
       alert('print job complete');
     }
 
-    $.fn.submitDueOrder = function (status) {
+    $.fn.submitDueOrder = async function (status) {
       let items = '';
       let payment = 0;
 
@@ -774,36 +770,29 @@ if (auth == undefined) {
         user_id: user._id,
       };
 
-      $.ajax({
-        url: api + 'new',
-        type: method,
-        data: JSON.stringify(data),
-        contentType: 'application/json; charset=utf-8',
-        cache: false,
-        processData: false,
-        success: function (data) {
-          cart = [];
-          $('#viewTransaction').html('');
-          $('#viewTransaction').html(receipt);
-          $('#orderModal').modal('show');
-          loadProducts();
-          loadCustomers();
-          $('.loading').hide();
-          $('#dueModal').modal('hide');
-          $('#paymentModel').modal('hide');
-          $(this).getHoldOrders();
-          $(this).getCustomerOrders();
-          $(this).renderTable(cart);
-        },
-        error: function (data) {
-          $('.loading').hide();
-          $('#dueModal').modal('toggle');
-          swal(
-            'Something went wrong!',
-            'Please refresh this page and try again'
-          );
-        },
-      });
+      try {
+        await axios('/new', {method: method, data: data})
+
+        cart = [];
+        $('#viewTransaction').html('');
+        $('#viewTransaction').html(receipt);
+        $('#orderModal').modal('show');
+        loadProducts();
+        loadCustomers();
+        $('.loading').hide();
+        $('#dueModal').modal('hide');
+        $('#paymentModel').modal('hide');
+        $(this).getHoldOrders();
+        $(this).getCustomerOrders();
+        $(this).renderTable(cart);
+      } catch (error) {
+        $('.loading').hide();
+        $('#dueModal').modal('toggle');
+        swal(
+          'Something went wrong!',
+          'Please refresh this page and try again'
+        );
+      }
 
       $('#refNumber').val('');
       $('#change').text('');
@@ -990,7 +979,7 @@ if (auth == undefined) {
       });
     };
 
-    $('#saveCustomer').on('submit', function (e) {
+    $('#saveCustomer').on('submit', async function (e) {
       e.preventDefault();
 
       let custData = {
@@ -1001,38 +990,31 @@ if (auth == undefined) {
         address: $('#userAddress').val(),
       };
 
-      $.ajax({
-        url: api + 'customers/customer',
-        type: 'POST',
-        data: JSON.stringify(custData),
-        contentType: 'application/json; charset=utf-8',
-        cache: false,
-        processData: false,
-        success: function (data) {
-          $('#newCustomer').modal('hide');
-          Swal.fire(
-            'Customer added!',
-            'Customer added successfully!',
-            'success'
-          );
-          $('#customer option:selected').removeAttr('selected');
-          $('#customer').append(
-            $('<option>', {
-              text: custData.name,
-              value: `{"id": ${custData._id}, "name": ${custData.name}}`,
-              selected: 'selected',
-            })
-          );
+      try {
+        await axios.post('customers/customer', custData)
 
-          $('#customer')
-            .val(`{"id": ${custData._id}, "name": ${custData.name}}`)
-            .trigger('chosen:updated');
-        },
-        error: function (data) {
-          $('#newCustomer').modal('hide');
-          Swal.fire('Error', 'Something went wrong please try again', 'error');
-        },
-      });
+        $('#newCustomer').modal('hide');
+        Swal.fire(
+          'Customer added!',
+          'Customer added successfully!',
+          'success'
+        );
+        $('#customer option:selected').removeAttr('selected');
+        $('#customer').append(
+          $('<option>', {
+            text: custData.name,
+            value: `{"id": ${custData._id}, "name": ${custData.name}}`,
+            selected: 'selected',
+          })
+        );
+
+        $('#customer')
+          .val(`{"id": ${custData._id}, "name": ${custData.name}}`)
+          .trigger('chosen:updated');
+      } catch (error) {
+        $('#newCustomer').modal('hide');
+        Swal.fire('Error', 'Something went wrong please try again', 'error');
+      }
     });
 
     $('#confirmPayment').hide();
@@ -1085,41 +1067,36 @@ if (auth == undefined) {
       $('#current_img').text('');
     });
 
-    $('#saveProduct').submit(function (e) {
+    $('#saveProduct').submit(async function (e) {
       e.preventDefault();
 
-      $(this).attr('action', api + 'inventory/product');
-      $(this).attr('method', 'POST');
+      try {
+        await axios.post('/inventory/product', $(this).serializeObject());
 
-      $(this).ajaxSubmit({
-        contentType: 'application/json',
-        success: function (response) {
-          $('#saveProduct').get(0).reset();
-          $('#current_img').text('');
+        $('#saveProduct').get(0).reset();
+        $('#current_img').text('');
 
-          loadProducts();
-          Swal.fire({
-            title: 'Product Saved',
-            text: 'Select an option below to continue.',
-            icon: 'success',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Add another',
-            cancelButtonText: 'Close',
-          }).then((result) => {
-            if (!result.value) {
-              $('#newProduct').modal('hide');
-            }
-          });
-        },
-        error: function (data) {
-          console.log(data);
-        },
-      });
+        loadProducts();
+        Swal.fire({
+          title: 'Product Saved',
+          text: 'Select an option below to continue.',
+          icon: 'success',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Add another',
+          cancelButtonText: 'Close',
+        }).then((result) => {
+          if (!result.value) {
+            $('#newProduct').modal('hide');
+          }
+        });
+      } catch (error) {
+        console.error(error);
+      }
     });
 
-    $('#saveCategory').submit(function (e) {
+    $('#saveCategory').submit(async function (e) {
       e.preventDefault();
 
       if ($('#category_id').val() == '') {
@@ -1128,33 +1105,32 @@ if (auth == undefined) {
         method = 'PUT';
       }
 
-      $.ajax({
-        type: method,
-        url: api + 'categories/category',
-        data: $(this).serialize(),
-        success: function (data, textStatus, jqXHR) {
-          $('#saveCategory').get(0).reset();
-          loadCategories();
-          loadProducts();
-          Swal.fire({
-            title: 'Category Saved',
-            text: 'Select an option below to continue.',
-            icon: 'success',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Add another',
-            cancelButtonText: 'Close',
-          }).then((result) => {
-            if (!result.value) {
-              $('#newCategory').modal('hide');
-            }
-          });
-        },
-        error: function (data) {
-          console.log(data);
-        },
-      });
+      try {
+        await axios('/categories/category', {
+          method: method,
+          data: $(this).serialize()
+        })
+
+        $('#saveCategory').get(0).reset();
+        loadCategories();
+        loadProducts();
+        Swal.fire({
+          title: 'Category Saved',
+          text: 'Select an option below to continue.',
+          icon: 'success',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Add another',
+          cancelButtonText: 'Close',
+        }).then((result) => {
+          if (!result.value) {
+            $('#newCategory').modal('hide');
+          }
+        });
+      } catch (error) {
+        console.error(error)
+      }
     });
 
     $.fn.editProduct = function (index) {
@@ -1244,7 +1220,7 @@ if (auth == undefined) {
       $('#newCategory').modal('show');
     };
 
-    $.fn.deleteProduct = function (id) {
+    $.fn.deleteProduct = async function (id) {
       Swal.fire({
         title: 'Are you sure?',
         text: 'You are about to delete this product.',
@@ -1253,21 +1229,23 @@ if (auth == undefined) {
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, delete it!',
-      }).then((result) => {
-        if (result.value) {
-          $.ajax({
-            url: api + 'inventory/product/' + id,
-            type: 'DELETE',
-            success: function (result) {
-              loadProducts();
-              Swal.fire('Done!', 'Product deleted', 'success');
-            },
-          });
+      }).then(async (result) => {
+        if (!result.value) {
+          return;
+        }
+
+        try {
+          await axios.delete('/inventory/product/' + id)
+
+          loadCategories();
+          Swal.fire('Done!', 'Product deleted', 'success');
+        } catch (error) {
+          console.error(error);
         }
       });
     };
 
-    $.fn.deleteUser = function (id) {
+    $.fn.deleteUser = async function (id) {
       Swal.fire({
         title: 'Are you sure?',
         text: 'You are about to delete this user.',
@@ -1276,21 +1254,23 @@ if (auth == undefined) {
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, delete!',
-      }).then((result) => {
-        if (result.value) {
-          $.ajax({
-            url: api + 'users/user/' + id,
-            type: 'DELETE',
-            success: function (result) {
-              loadUserList();
-              Swal.fire('Done!', 'User deleted', 'success');
-            },
-          });
+      }).then(async (result) => {
+        if (!result.value) {
+          return;
+        }
+
+        try {
+          await axios.delete('/users/user/' + id)
+
+          loadCategories();
+          Swal.fire('Done!', 'User deleted', 'success');
+        } catch (error) {
+          console.error(error);
         }
       });
     };
 
-    $.fn.deleteCategory = function (id) {
+    $.fn.deleteCategory = async function (id) {
       Swal.fire({
         title: 'Are you sure?',
         text: 'You are about to delete this category.',
@@ -1299,16 +1279,18 @@ if (auth == undefined) {
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, delete it!',
-      }).then((result) => {
-        if (result.value) {
-          $.ajax({
-            url: api + 'categories/category/' + id,
-            type: 'DELETE',
-            success: function (result) {
-              loadCategories();
-              Swal.fire('Done!', 'Category deleted', 'success');
-            },
-          });
+      }).then(async (result) => {
+        if (!result.value) {
+          return;
+        }
+
+        try {
+          await axios.delete('/categories/category/' + id)
+
+          loadCategories();
+          Swal.fire('Done!', 'Category deleted', 'success');
+        } catch (error) {
+          console.error(error);
         }
       });
     };
@@ -1506,7 +1488,7 @@ if (auth == undefined) {
       });
     });
 
-    $('#settings_form').on('submit', function (e) {
+    $('#settings_form').on('submit', async function (e) {
       e.preventDefault();
       let formData = $(this).serializeObject();
       let mac_address;
@@ -1529,21 +1511,15 @@ if (auth == undefined) {
           'Please make sure the tax value is a number',
           'warning'
         );
-      } else {
-        storage.set('settings', formData);
+        return;
+      }
+      storage.set('settings', formData);
 
-        $(this).attr('action', api + 'settings/post');
-        $(this).attr('method', 'POST');
-
-        $(this).ajaxSubmit({
-          contentType: 'application/json',
-          success: function (response) {
-            window.electronAPI.reloadApp();
-          },
-          error: function (data) {
-            console.log(data);
-          },
-        });
+      try {
+        await axios.post('/settings/post', formData)
+        window.electronAPI.reloadApp();
+      } catch (error) {
+        console.error(error);
       }
     });
 
@@ -1564,7 +1540,7 @@ if (auth == undefined) {
       }
     });
 
-    $('#saveUser').on('submit', function (e) {
+    $('#saveUser').on('submit', async function (e) {
       e.preventDefault();
       let formData = $(this).serializeObject();
 
@@ -1589,29 +1565,22 @@ if (auth == undefined) {
         formData.password == atob(allUsers[user_index].password) ||
         formData.password == formData.pass
       ) {
-        $.ajax({
-          url: api + 'users/post',
-          type: 'POST',
-          data: JSON.stringify(formData),
-          contentType: 'application/json; charset=utf-8',
-          cache: false,
-          processData: false,
-          success: function (data) {
-            if (ownUserEdit) {
-              window.electronAPI.reloadApp();
-            } else {
-              $('#userModal').modal('hide');
+        try {
+          await axios.post('/delete', data)
 
-              loadUserList();
+          if (ownUserEdit) {
+            window.electronAPI.reloadApp();
+          } else {
+            $('#userModal').modal('hide');
 
-              $('#Users').modal('show');
-              Swal.fire('Ok!', 'User details saved!', 'success');
-            }
-          },
-          error: function (data) {
-            console.log(data);
-          },
-        });
+            loadUserList();
+
+            $('#Users').modal('show');
+            Swal.fire('Ok!', 'User details saved!', 'success');
+          }
+        } catch (error) {
+          console.error(error);
+        }
       }
     });
 
@@ -1955,7 +1924,7 @@ function tillFilter(tills) {
 }
 
 $.fn.viewTransaction = function (index) {
-  transaction_index = index;
+  let transaction_index = index;
 
   let discount = allTransactions[index].discount;
   let customer =
@@ -1987,7 +1956,7 @@ $.fn.viewTransaction = function (index) {
   type = allTransactions[index].payment_type;
 
   if (allTransactions[index].paid != '') {
-    payment = `<tr>
+    let payment = `<tr>
                     <td>Paid</td>
                     <td>:</td>
                     <td>${settings.symbol + allTransactions[index].paid}</td>
@@ -2146,11 +2115,6 @@ $('body').on('submit', '#account', async function (e) {
 
   try {
     const response = await axios.post('/users/login', formData)
-
-    if (response.status != 200) {
-      Swal.fire('Oops!', auth_error, 'warning');
-      return
-    }
 
     storage.set('auth', { auth: true });
     storage.set('user', response.data);

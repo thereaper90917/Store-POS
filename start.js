@@ -25,6 +25,7 @@ function createWindow() {
     minWidth: 1200,
     minHeight: 750,
     webPreferences: {
+      // preload: path.join(__dirname, 'public/preload.js'),
       nodeIntegration: true,
       enableRemoteModule: true,
       contextIsolation: false,
@@ -41,6 +42,8 @@ function createWindow() {
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+
+  require('@electron/remote/main').initialize()
 }
 
 app.on("ready", createWindow);

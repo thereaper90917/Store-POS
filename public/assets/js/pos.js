@@ -2,15 +2,10 @@ let moment = require('moment');
 let Swal = require('sweetalert2');
 let Store = require('electron-store');
 let jsPDF = require('jspdf');
-let btoa = require('btoa');
 let JsBarcode = require('jsbarcode');
 let html2canvas = require('html2canvas');
 
 let macaddress = require('macaddress');
-let { ipcRenderer } = require('electron');
-
-const remote = require('electron').remote;
-const app = remote.app;
 
 let cart = [];
 let index = 0;
@@ -34,7 +29,7 @@ let user_index = 0;
 let dotInterval = setInterval(function () {
   $('.dot').text('.');
 }, 3000);
-let img_path = app.getPath('appData') + '/POS/uploads/';
+let img_path = 'http://localhost:8001/images/';
 let api = 'http://localhost:8001/api/';
 let categories = [];
 let holdOrderList = [];
@@ -1505,7 +1500,7 @@ if (auth == undefined) {
           $.get(api + 'users/logout/' + user._id, function (data) {
             storage.delete('auth');
             storage.delete('user');
-            ipcRenderer.send('app-reload', '');
+            window.electronAPI.reloadApp();
           });
         }
       });
@@ -1543,7 +1538,7 @@ if (auth == undefined) {
         $(this).ajaxSubmit({
           contentType: 'application/json',
           success: function (response) {
-            ipcRenderer.send('app-reload', '');
+            window.electronAPI.reloadApp();
           },
           error: function (data) {
             console.log(data);
@@ -1562,7 +1557,7 @@ if (auth == undefined) {
         if (isNumeric(formData.till)) {
           formData['app'] = $('#app').find('option:selected').text();
           storage.set('settings', formData);
-          ipcRenderer.send('app-reload', '');
+          window.electronAPI.reloadApp();
         } else {
           Swal.fire('Oops!', 'Till number must be a number!', 'warning');
         }
@@ -1603,7 +1598,7 @@ if (auth == undefined) {
           processData: false,
           success: function (data) {
             if (ownUserEdit) {
-              ipcRenderer.send('app-reload', '');
+              window.electronAPI.reloadApp();
             } else {
               $('#userModal').modal('hide');
 
@@ -2160,7 +2155,7 @@ $('body').on('submit', '#account', function (e) {
         if (data._id) {
           storage.set('auth', { auth: true });
           storage.set('user', data);
-          ipcRenderer.send('app-reload', '');
+          window.electronAPI.reloadApp();
         } else {
           Swal.fire('Oops!', auth_error, 'warning');
         }
@@ -2183,7 +2178,7 @@ $('#quit').click(function () {
     confirmButtonText: 'Close Application',
   }).then((result) => {
     if (result.value) {
-      ipcRenderer.send('app-quit', '');
+      window.electronAPI.quitApp();
     }
   });
 });

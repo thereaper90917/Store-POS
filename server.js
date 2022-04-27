@@ -37,5 +37,6 @@ app.use("/api/users", require("./api/users"));
 app.use("/api", require("./api/transactions"));
 
 // app.use(express.static('public'));
+app.use('/images', express.static(process.env.APPDATA + '/POS/uploads/'));
 
 server.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));

@@ -1,5 +1,4 @@
 let moment = require('moment');
-let Swal = require('sweetalert2');
 let Store = require('electron-store');
 let jsPDF = require('jspdf');
 let JsBarcode = require('jsbarcode');
@@ -12,6 +11,38 @@ const axios = require('axios').create({
 });
 
 import Login_Input from '../Login_Input.svelte';
+import Swal from 'sweetalert2'
+
+
+const SWAL_CONFIRM_CONFIG = {
+  confirmButtonColor: '#3085d6',
+  confirmButtonText: 'Yes, proceed with action',
+  showCancelButton: true,
+  cancelButtonText: 'Cancel',
+}
+
+const SWAL_ADD_ANOTHER_CONFIG = {
+  ...SWAL_CONFIRM_CONFIG,
+  text: 'Select an option below to continue.',
+  icon: 'success',
+  confirmButtonText: 'Add another',
+}
+
+const SWAL_DELETE_CONFIG = {
+  ...SWAL_CONFIRM_CONFIG,
+  icon: 'warning',
+  confirmButtonColor: '#d33',
+  confirmButtonText: 'Delete',
+}
+
+function delete_success_notification() {
+  Swal.fire({
+    title: 'Deleted!',
+    text: '',
+    icon: 'success',
+    timer: 2000,
+  });
+}
 
 let cart = [];
 let index = 0;
@@ -533,20 +564,16 @@ if (auth == undefined) {
     $.fn.cancelOrder = function () {
       if (cart.length > 0) {
         Swal.fire({
-          title: 'Are you sure?',
+          title: 'Delete order',
           text: 'You are about to remove all items from the cart.',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Yes, clear it!',
+          ...SWAL_DELETE_CONFIG,
         }).then((result) => {
           if (result.value) {
             cart = [];
             $(this).renderTable(cart);
             holdOrder = 0;
 
-            Swal.fire('Cleared!', 'All items have been removed.', 'success');
+            delete_success_notification();
           }
         });
       }
@@ -949,11 +976,7 @@ if (auth == undefined) {
       Swal.fire({
         title: 'Delete order?',
         text: 'This will delete the order. Are you sure you want to delete!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        ...SWAL_DELETE_CONFIG,
       }).then(async (result) => {
         if (result.value) {
           try {
@@ -962,7 +985,7 @@ if (auth == undefined) {
             $(this).getHoldOrders();
             $(this).getCustomerOrders();
 
-            Swal.fire('Deleted!', 'You have deleted the order!', 'success');
+            delete_success_notification();
           } catch (error) {
             $('.loading').hide();
           }
@@ -1079,13 +1102,7 @@ if (auth == undefined) {
         loadProducts();
         Swal.fire({
           title: 'Product Saved',
-          text: 'Select an option below to continue.',
-          icon: 'success',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Add another',
-          cancelButtonText: 'Close',
+          ...SWAL_ADD_ANOTHER_CONFIG,
         }).then((result) => {
           if (!result.value) {
             $('#newProduct').modal('hide');
@@ -1116,13 +1133,7 @@ if (auth == undefined) {
         loadProducts();
         Swal.fire({
           title: 'Category Saved',
-          text: 'Select an option below to continue.',
-          icon: 'success',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Add another',
-          cancelButtonText: 'Close',
+          ...SWAL_ADD_ANOTHER_CONFIG,
         }).then((result) => {
           if (!result.value) {
             $('#newCategory').modal('hide');
@@ -1200,13 +1211,9 @@ if (auth == undefined) {
 
     $.fn.deleteProduct = async function (id) {
       Swal.fire({
-        title: 'Are you sure?',
+        title: 'Delete product?',
         text: 'You are about to delete this product.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        ...SWAL_DELETE_CONFIG,
       }).then(async (result) => {
         if (!result.value) {
           return;
@@ -1216,7 +1223,7 @@ if (auth == undefined) {
           await axios.delete('/inventory/product/' + id)
 
           loadCategories();
-          Swal.fire('Done!', 'Product deleted', 'success');
+          delete_success_notification();
         } catch (error) {
           console.error(error);
         }
@@ -1225,13 +1232,9 @@ if (auth == undefined) {
 
     $.fn.deleteUser = async function (id) {
       Swal.fire({
-        title: 'Are you sure?',
+        title: 'Delete User',
         text: 'You are about to delete this user.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete!',
+        ...SWAL_DELETE_CONFIG,
       }).then(async (result) => {
         if (!result.value) {
           return;
@@ -1241,7 +1244,7 @@ if (auth == undefined) {
           await axios.delete('/users/user/' + id)
 
           loadCategories();
-          Swal.fire('Done!', 'User deleted', 'success');
+          delete_success_notification();
         } catch (error) {
           console.error(error);
         }
@@ -1250,13 +1253,9 @@ if (auth == undefined) {
 
     $.fn.deleteCategory = async function (id) {
       Swal.fire({
-        title: 'Are you sure?',
+        title: 'Delete Category?',
         text: 'You are about to delete this category.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        ...SWAL_DELETE_CONFIG,
       }).then(async (result) => {
         if (!result.value) {
           return;
@@ -1266,7 +1265,7 @@ if (auth == undefined) {
           await axios.delete('/categories/category/' + id)
 
           loadCategories();
-          Swal.fire('Done!', 'Category deleted', 'success');
+          delete_success_notification();
         } catch (error) {
           console.error(error);
         }
@@ -1448,12 +1447,11 @@ if (auth == undefined) {
 
     $('#log-out').click(function () {
       Swal.fire({
-        title: 'Are you sure?',
+        title: 'Logout',
         text: 'You are about to log out.',
         icon: 'warning',
-        showCancelButton: true,
+        ...SWAL_CONFIRM_CONFIG,
         confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
         confirmButtonText: 'Logout',
       }).then((result) => {
         if (result.value) {
@@ -2106,13 +2104,12 @@ $('body').on('submit', '#account', async function (e) {
 
 $('#quit').click(function () {
   Swal.fire({
-    title: 'Are you sure?',
+    title: 'Close Application?',
     text: 'You are about to close the application.',
     icon: 'warning',
-    showCancelButton: true,
+    ...SWAL_CONFIRM_CONFIG,
     confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Close Application',
+    confirmButtonText: 'Close',
   }).then((result) => {
     if (result.value) {
       storage.delete('auth');

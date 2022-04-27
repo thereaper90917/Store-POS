@@ -12,7 +12,8 @@
     "lint": "echo \"No linting configured\"",
     "svelte-build": "rollup -c",
     "svelte-dev": "rollup -c -w",
-    "svelte-start": "sirv public"
+    "svelte-start": "sirv public",
+    "seed": "node seeddatabase.js"
   },
   "keywords": [],
   "author": {

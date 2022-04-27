@@ -106,7 +106,21 @@ app.post('/product', upload.single('imagename'), function (req, res) {
     );
   }
 });
-
+app.get('/seed', (req, res) => {
+  let Product = {
+    _id: Math.floor(Date.now() / 1000),
+    price: '3999',
+    category: '0',
+    quantity: '400',
+    name: 'Test4000',
+    stock: 1,
+    img: '',
+  };
+  inventoryDB.insert(Product, function (err, product) {
+    if (err) res.status(500).send(err);
+    else res.send(product);
+  });
+});
 app.delete('/product/:productId', function (req, res) {
   inventoryDB.remove(
     {

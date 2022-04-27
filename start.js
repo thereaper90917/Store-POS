@@ -25,7 +25,7 @@ function createWindow() {
     minWidth: 1200,
     minHeight: 750,
     webPreferences: {
-      // preload: path.join(__dirname, 'public/preload.js'),
+      preload: path.join(__dirname, 'public/preload.js'),
       nodeIntegration: true,
       enableRemoteModule: true,
       contextIsolation: false,

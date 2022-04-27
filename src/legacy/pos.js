@@ -965,24 +965,18 @@ if (auth == undefined) {
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, delete it!',
-      }).then((result) => {
+      }).then(async (result) => {
         if (result.value) {
-          $.ajax({
-            url: api + 'delete',
-            type: 'POST',
-            data: JSON.stringify(data),
-            contentType: 'application/json; charset=utf-8',
-            cache: false,
-            success: function (data) {
-              $(this).getHoldOrders();
-              $(this).getCustomerOrders();
+          try {
+            await axios.post('/delete', data)
 
-              Swal.fire('Deleted!', 'You have deleted the order!', 'success');
-            },
-            error: function (data) {
-              $('.loading').hide();
-            },
-          });
+            $(this).getHoldOrders();
+            $(this).getCustomerOrders();
+
+            Swal.fire('Deleted!', 'You have deleted the order!', 'success');
+          } catch (error) {
+            $('.loading').hide();
+          }
         }
       });
     };

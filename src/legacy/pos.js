@@ -4,8 +4,14 @@ let Store = require('electron-store');
 let jsPDF = require('jspdf');
 let JsBarcode = require('jsbarcode');
 let html2canvas = require('html2canvas');
-
 let macaddress = require('macaddress');
+
+const axios = require('axios').create({
+  baseURL: 'http://localhost:8001/api',
+  timeout: 5000,
+});
+
+import Login_Input from '../Login_Input.svelte';
 
 let cart = [];
 let index = 0;
@@ -2130,40 +2136,35 @@ $('#reportrange').on('apply.daterangepicker', function (ev, picker) {
 });
 
 function authenticate() {
-  $('#loading').append(
-    `<div id="load"><form id="account"><div class="form-group"><input type="text" placeholder="Username" name="username" class="form-control"></div>
-        <div class="form-group"><input type="password" placeholder="Password" name="password" class="form-control"></div>
-        <div class="form-group"><input type="submit" class="btn btn-block btn-default" value="Login"></div></form>`
-  );
+  new Login_Input({
+    target: document.getElementById('loading'),
+  });
 }
 
-$('body').on('submit', '#account', function (e) {
+$('body').on('submit', '#account', async function (e) {
   e.preventDefault();
   let formData = $(this).serializeObject();
 
   if (formData.username == '' || formData.password == '') {
     Swal.fire('Incomplete form!', auth_empty, 'warning');
-  } else {
-    $.ajax({
-      url: api + 'users/login',
-      type: 'POST',
-      data: JSON.stringify(formData),
-      contentType: 'application/json; charset=utf-8',
-      cache: false,
-      processData: false,
-      success: function (data) {
-        if (data._id) {
-          storage.set('auth', { auth: true });
-          storage.set('user', data);
-          window.electronAPI.reloadApp();
-        } else {
-          Swal.fire('Oops!', auth_error, 'warning');
-        }
-      },
-      error: function (data) {
-        console.log(data);
-      },
-    });
+    return
+  }
+
+  try {
+    const response = await axios.post('/users/login', formData)
+
+    if (response.status != 200) {
+      Swal.fire('Oops!', auth_error, 'warning');
+      return
+    }
+
+    storage.set('auth', { auth: true });
+    storage.set('user', response.data);
+    window.electronAPI.reloadApp();
+
+  } catch (error) {
+    Swal.fire('Oops!', 'Something went wrong, please try again!', 'warning');
+    console.error(error);
   }
 });
 
@@ -2178,6 +2179,8 @@ $('#quit').click(function () {
     confirmButtonText: 'Close Application',
   }).then((result) => {
     if (result.value) {
+      storage.delete('auth');
+      storage.delete('user');
       window.electronAPI.quitApp();
     }
   });

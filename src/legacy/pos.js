@@ -1170,45 +1170,23 @@ if (auth == undefined) {
 
     $.fn.editUser = function (index) {
       user_index = index;
+      let user = allUsers[index]
 
       $('#Users').modal('hide');
 
       $('.perms').show();
 
-      $('#user_id').val(allUsers[index]._id);
-      $('#fullname').val(allUsers[index].fullname);
-      $('#username').val(allUsers[index].username);
-      $('#password').val(atob(allUsers[index].password));
+      $('#user_id').val(user._id);
+      $('#fullname').val(user.fullname);
+      $('#username').val(user.username);
+      $('#password').val(atob(user.password));
 
-      if (allUsers[index].perm_products == 1) {
-        $('#perm_products').prop('checked', true);
-      } else {
-        $('#perm_products').prop('checked', false);
-      }
 
-      if (allUsers[index].perm_categories == 1) {
-        $('#perm_categories').prop('checked', true);
-      } else {
-        $('#perm_categories').prop('checked', false);
-      }
-
-      if (allUsers[index].perm_transactions == 1) {
-        $('#perm_transactions').prop('checked', true);
-      } else {
-        $('#perm_transactions').prop('checked', false);
-      }
-
-      if (allUsers[index].perm_users == 1) {
-        $('#perm_users').prop('checked', true);
-      } else {
-        $('#perm_users').prop('checked', false);
-      }
-
-      if (allUsers[index].perm_settings == 1) {
-        $('#perm_settings').prop('checked', true);
-      } else {
-        $('#perm_settings').prop('checked', false);
-      }
+      $('#perm_products').prop('checked', user.perm_users == 1);
+      $('#perm_categories').prop('checked', user.perm_users == 1);
+      $('#perm_transactions').prop('checked', user.perm_users == 1);
+      $('#perm_users').prop('checked', user.perm_users == 1);
+      $('#perm_settings').prop('checked', user.perm_users == 1);
 
       $('#userModal').modal('show');
     };
